@@ -1,0 +1,1235 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>kan.grow · Resume Builder</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap');
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #F7F5F0; --surface: #FFFFFF; --ink: #1A1A18; --ink2: #5A5A55; --ink3: #9A9A90;
+    --accent: #3a7d55; --accent-dark: #2a5e3f; --accent-light: #eaf4ee;
+    --border: rgba(0,0,0,0.1); --radius: 12px;
+    --font-display: 'DM Serif Display', Georgia, serif;
+    --font-body: 'DM Sans', system-ui, sans-serif;
+    --green: #3a7d55;
+  }
+  body { font-family: var(--font-body); background: var(--bg); color: var(--ink); min-height: 100vh; font-size: 15px; line-height: 1.6; }
+  .app { max-width: 780px; margin: 0 auto; padding: 2rem 1.5rem 5rem; }
+
+  /* ── Header ── */
+  /* ── Brand tool name ── */
+  .brand { display: flex; align-items: center; gap: 12px; }
+  .brand-tool-name { font-family: var(--font-display); font-size: 20px; letter-spacing: -0.3px; color: var(--ink); line-height: 1; }
+  .brand-tool-name span { color: var(--accent); }
+  .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2.5rem; flex-wrap: wrap; gap: 1rem; }
+  .brand img { height: 36px; width: auto; display: block; }
+  .creator-pill { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
+  .creator-label { font-size: 10px; color: var(--ink3); letter-spacing: 0.3px; text-align: right; }
+  .contact-pill { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--ink2); background: var(--surface); border: 0.5px solid var(--border); border-radius: 20px; padding: 5px 12px; text-decoration: none; transition: all 0.15s; }
+  .contact-pill:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* ── Animations ── */
+  .screen { animation: fadeIn 0.3s ease; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* ── Typography ── */
+  h1 { font-family: var(--font-display); font-size: 34px; line-height: 1.15; letter-spacing: -0.5px; margin-bottom: 0.5rem; }
+  h2 { font-family: var(--font-display); font-size: 24px; letter-spacing: -0.3px; margin-bottom: 0.4rem; }
+  .subtitle { color: var(--ink2); font-size: 15px; margin-bottom: 1.75rem; font-weight: 300; }
+
+  /* ── Cards & inputs ── */
+  .card { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius); padding: 1.5rem; margin-bottom: 1rem; }
+  .card-label { font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 1px; color: var(--ink3); margin-bottom: 0.75rem; }
+  textarea { width: 100%; padding: 10px 14px; background: var(--bg); border: 0.5px solid var(--border); border-radius: 8px; font-family: var(--font-body); font-size: 14px; color: var(--ink); outline: none; transition: border-color 0.2s; resize: vertical; line-height: 1.6; }
+  textarea:focus { border-color: var(--accent); background: white; }
+  input[type=file] { display: none; }
+
+  /* ── Buttons ── */
+  .btn { display: inline-flex; align-items: center; gap: 8px; padding: 11px 22px; border-radius: 8px; font-family: var(--font-body); font-size: 14px; font-weight: 500; cursor: pointer; border: none; transition: all 0.18s; }
+  .btn-primary { background: var(--accent); color: white; }
+  .btn-primary:hover { background: var(--accent-dark); transform: translateY(-1px); }
+  .btn-primary:disabled { background: var(--ink3); cursor: not-allowed; transform: none; }
+  .btn-outline { background: transparent; color: var(--ink); border: 0.5px solid var(--border); }
+  .btn-outline:hover { background: var(--accent-light); border-color: var(--accent); }
+  .btn-ghost { background: transparent; color: var(--ink3); border: none; font-size: 13px; padding: 8px 12px; }
+  .btn-ghost:hover { color: var(--ink); }
+  .btn-row { display: flex; gap: 10px; margin-top: 1.5rem; flex-wrap: wrap; align-items: center; }
+
+  /* ── Tabs ── */
+  .tab-row { display: flex; gap: 2px; margin-bottom: 1rem; background: var(--bg); border-radius: 8px; padding: 3px; border: 0.5px solid var(--border); }
+  .tab { flex: 1; text-align: center; padding: 7px; border-radius: 6px; font-size: 13px; cursor: pointer; color: var(--ink2); transition: all 0.2s; }
+  .tab.active { background: var(--surface); color: var(--ink); font-weight: 500; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+
+  /* ── Drop zone ── */
+  .drop-zone { border: 1.5px dashed var(--border); border-radius: var(--radius); padding: 1.5rem; text-align: center; cursor: pointer; transition: all 0.2s; background: var(--bg); margin-bottom: 1rem; }
+  .drop-zone:hover, .drop-zone.dragover { border-color: var(--accent); background: var(--accent-light); }
+  .drop-zone p { color: var(--ink2); font-size: 13px; margin-top: 4px; }
+  .drop-zone strong { color: var(--accent); }
+  .file-chosen { color: var(--accent); font-weight: 500; font-size: 12px; margin-top: 6px; }
+
+  /* ── Notices ── */
+  .error-notice { background: #FFF0F0; border: 0.5px solid #F0A0A0; border-radius: 8px; padding: 10px 14px; font-size: 13px; color: #8B2020; margin-bottom: 1rem; display: flex; gap: 8px; }
+  .info-notice { background: var(--accent-light); border: 0.5px solid rgba(58,125,85,0.2); border-radius: 8px; padding: 10px 14px; font-size: 13px; color: var(--accent-dark); margin-bottom: 1rem; display: flex; gap: 8px; align-items: flex-start; }
+  .tip-notice { background: #FFFBF0; border: 0.5px solid rgba(180,140,0,0.25); border-radius: 8px; padding: 10px 14px; font-size: 13px; color: #7a5c00; margin-bottom: 1rem; display: flex; gap: 8px; align-items: flex-start; }
+  .success-notice { background: #F0FFF5; border: 0.5px solid rgba(58,125,85,0.3); border-radius: 8px; padding: 10px 14px; font-size: 13px; color: var(--accent-dark); margin-bottom: 1rem; display: flex; gap: 8px; align-items: flex-start; }
+
+  /* ── Progress ── */
+  .progress-wrap { margin-bottom: 1.75rem; }
+  .progress-label { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; font-size: 11px; color: var(--ink3); }
+  .progress-label strong { color: var(--accent); font-weight: 500; }
+  .progress-bar { height: 3px; background: var(--border); border-radius: 2px; overflow: hidden; }
+  .progress-fill { height: 100%; background: var(--accent); border-radius: 2px; transition: width 0.5s ease; }
+
+  /* ── Prompt box ── */
+  .prompt-box { background: #1A1A18; border-radius: var(--radius); padding: 1.5rem; font-family: 'Georgia', serif; font-size: 13px; line-height: 1.8; color: #E8E6E0; white-space: pre-wrap; word-break: break-word; max-height: 320px; overflow-y: auto; margin-bottom: 1rem; border: 0.5px solid rgba(255,255,255,0.08); position: relative; }
+  .prompt-box::-webkit-scrollbar { width: 4px; }
+  .prompt-box::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 2px; }
+  .prompt-fade { position: absolute; bottom: 0; left: 0; right: 0; height: 60px; background: linear-gradient(transparent, #1A1A18); border-radius: 0 0 var(--radius) var(--radius); pointer-events: none; }
+
+  /* ── AI chips ── */
+  .ai-chip { display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 500; border: 0.5px solid var(--border); background: var(--surface); text-decoration: none; color: var(--ink); transition: all 0.15s; }
+  .ai-chip-primary { background: var(--accent); color: white; border-color: var(--accent); }
+  .ai-chip-primary:hover { background: var(--accent-dark); color: white; }
+
+  /* ── Step cards ── */
+  .step-card { display: flex; gap: 14px; align-items: flex-start; padding: 1rem 0; border-bottom: 0.5px solid var(--border); }
+  .step-card:last-child { border-bottom: none; }
+  .step-num { width: 28px; height: 28px; border-radius: 50%; background: var(--accent-light); color: var(--accent); font-size: 13px; font-weight: 500; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 2px; }
+  .step-title { font-size: 14px; font-weight: 500; margin-bottom: 2px; }
+  .step-desc { font-size: 13px; color: var(--ink2); }
+
+  /* ── Badges ── */
+  .badge { display: inline-block; padding: 2px 9px; border-radius: 20px; font-size: 11px; font-weight: 500; }
+  .badge-green { background: var(--accent-light); color: var(--accent-dark); }
+  .badge-gold { background: #F5EDD8; color: #8B6914; }
+
+  /* ── Misc ── */
+  .char-count { font-size: 11px; color: var(--ink3); margin-top: 4px; text-align: right; }
+  .divider { height: 0.5px; background: var(--border); margin: 1.5rem 0; }
+  .guidelines-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 1.5rem; }
+  .guideline-chip { font-size: 12px; color: var(--ink2); padding: 5px 10px; background: var(--surface); border: 0.5px solid var(--border); border-radius: 6px; display: flex; gap: 6px; align-items: flex-start; }
+  .guideline-chip span:first-child { color: var(--accent); flex-shrink: 0; }
+
+  /* ── CTA choice cards on home ── */
+  .choice-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 1.5rem; }
+  .choice-card { background: var(--surface); border: 1.5px solid var(--border); border-radius: var(--radius); padding: 1.25rem 1.5rem; cursor: pointer; transition: all 0.2s; text-align: left; width: 100%; }
+  .choice-card:hover { border-color: var(--accent); box-shadow: 0 4px 16px rgba(58,125,85,0.1); transform: translateY(-2px); }
+  .choice-card.primary { border-color: var(--accent); background: var(--accent-light); }
+  .choice-card.primary:hover { background: #daeee3; }
+  .choice-icon { font-size: 22px; margin-bottom: 8px; }
+  .choice-title { font-size: 15px; font-weight: 500; color: var(--ink); margin-bottom: 4px; }
+  .choice-desc { font-size: 12px; color: var(--ink2); line-height: 1.5; }
+  .choice-tag { display: inline-block; margin-top: 8px; font-size: 11px; font-weight: 500; color: var(--accent); background: white; border: 0.5px solid var(--accent); border-radius: 20px; padding: 2px 9px; }
+
+  /* ── What happens next panel ── */
+  .next-panel { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius); padding: 1rem 1.25rem; margin-top: 1.25rem; }
+  .next-panel-title { font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 1px; color: var(--ink3); margin-bottom: 0.75rem; }
+  .next-row { display: flex; gap: 10px; padding: 5px 0; font-size: 13px; color: var(--ink2); border-bottom: 0.5px solid var(--border); }
+  .next-row:last-child { border-bottom: none; }
+  .next-row-num { color: var(--accent); font-weight: 500; flex-shrink: 0; width: 18px; }
+
+  /* ── Inline helper text ── */
+  .field-hint { font-size: 12px; color: var(--ink3); margin-top: 4px; line-height: 1.5; }
+
+  /* ── Footer ── */
+  .footer { margin-top: 3rem; padding-top: 1.5rem; border-top: 0.5px solid var(--border); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
+  .footer-brand { font-size: 12px; color: var(--ink3); }
+  .footer-brand strong { color: var(--accent); }
+  .footer-right { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
+  .footer-creator-label { font-size: 10px; color: var(--ink3); }
+  .footer-link { font-size: 12px; color: var(--ink3); text-decoration: none; }
+  .footer-link:hover { color: var(--accent); }
+
+  /* ── Multi-entry cards ── */
+  .entry-card { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius); padding: 1.25rem; margin-bottom: 0.75rem; position: relative; }
+  .entry-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+  .entry-card-title { font-size: 13px; font-weight: 500; color: var(--ink2); }
+  .entry-remove { background: none; border: none; cursor: pointer; color: var(--ink3); font-size: 13px; padding: 2px 6px; border-radius: 4px; transition: all 0.15s; }
+  .entry-remove:hover { color: #8B2020; background: #FFF0F0; }
+  .entry-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .entry-fields .full { grid-column: 1 / -1; }
+  .field-group { display: flex; flex-direction: column; gap: 5px; }
+  .field-group label { font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.8px; color: var(--ink3); }
+  .field-group input { width: 100%; padding: 8px 12px; background: var(--bg); border: 0.5px solid var(--border); border-radius: 7px; font-family: var(--font-body); font-size: 14px; color: var(--ink); outline: none; transition: border-color 0.2s; }
+  .field-group input:focus { border-color: var(--accent); background: white; }
+  .field-group textarea { background: var(--bg); }
+  .add-entry-btn { display: flex; align-items: center; gap: 7px; width: 100%; padding: 10px 16px; border: 1.5px dashed var(--border); border-radius: var(--radius); background: transparent; color: var(--accent); font-family: var(--font-body); font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.2s; margin-bottom: 1rem; }
+  .add-entry-btn:hover { border-color: var(--accent); background: var(--accent-light); }
+  .checkbox-row { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--ink2); cursor: pointer; margin-top: 4px; }
+  .checkbox-row input[type=checkbox] { display: inline; width: 15px; height: 15px; accent-color: var(--accent); cursor: pointer; }
+  @media (max-width: 540px) { .entry-fields { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <div class="brand">
+      <img src="data:image/png;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/4gHYSUNDX1BST0ZJTEUAAQEAAAHIAAAAAAQwAABtbnRyUkdCIFhZWiAH4AABAAEAAAAAAABhY3NwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAA9tYAAQAAAADTLQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAlkZXNjAAAA8AAAACRyWFlaAAABFAAAABRnWFlaAAABKAAAABRiWFlaAAABPAAAABR3dHB0AAABUAAAABRyVFJDAAABZAAAAChnVFJDAAABZAAAAChiVFJDAAABZAAAAChjcHJ0AAABjAAAADxtbHVjAAAAAAAAAAEAAAAMZW5VUwAAAAgAAAAcAHMAUgBHAEJYWVogAAAAAAAAb6IAADj1AAADkFhZWiAAAAAAAABimQAAt4UAABjaWFlaIAAAAAAAACSgAAAPhAAAts9YWVogAAAAAAAA9tYAAQAAAADTLXBhcmEAAAAAAAQAAAACZmYAAPKnAAANWQAAE9AAAApbAAAAAAAAAABtbHVjAAAAAAAAAAEAAAAMZW5VUwAAACAAAAAcAEcAbwBvAGcAbABlACAASQBuAGMALgAgADIAMAAxADb/2wBDAAUDBAQEAwUEBAQFBQUGBwwIBwcHBw8LCwkMEQ8SEhEPERETFhwXExQaFRERGCEYGh0dHx8fExciJCIeJBweHx7/2wBDAQUFBQcGBw4ICA4eFBEUHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh7/wAARCAQ4BDgDASIAAhEBAxEB/8QAHQABAAICAwEBAAAAAAAAAAAAAAcIBgkDBAUBAv/EAGMQAQABAwMBBAQGCQsQCAUDBQABAgMEBQYRBwgSITETQVFhFBUicYGRCTI3OHR1obKzFiNCUmKCkqKx0dIXGDM1NlVWV3JzhJOUlbTBJDlDU2OlwtMmKHajwyU0VGRlg6Th/8QAGwEBAAIDAQEAAAAAAAAAAAAAAAMGAgQFAQf/xAA2EQEAAgECBAMFBwQCAwEAAAAAAQIDBBEFEiExE0FRMnGBkbEGIjRhodHwFBVSweHxFiMkQv/aAAwDAQACEQMRAD8AuWAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA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AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAH//2Q==" alt="kan.grow">
+      <div class="brand-tool-name">Job<span>Craft</span></div>
+    </div>
+    <div class="creator-pill">
+      <span class="creator-label">Created by</span>
+      <a class="contact-pill" href="https://www.linkedin.com/in/krina-kalpesh-sanghvi" target="_blank">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6zM2 9h4v12H2z"/><circle cx="4" cy="4" r="2"/></svg>
+        Krina Sanghvi
+      </a>
+    </div>
+  </div>
+
+  <div id="root"></div>
+
+  <div class="footer">
+    <div class="footer-brand">Built by <strong>kan.grow</strong> · Free resume tool</div>
+    <div class="footer-right">
+      <span class="footer-creator-label">Reach the creator here</span>
+      <a class="footer-link" href="https://www.linkedin.com/in/krina-kalpesh-sanghvi" target="_blank">linkedin.com/in/krina-kalpesh-sanghvi</a>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js"></script>
+<script>
+  if (typeof pdfjsLib !== 'undefined') {
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+  }
+</script>
+<script>
+const LINKEDIN = 'https://www.linkedin.com/in/krina-kalpesh-sanghvi';
+
+const state = {
+  screen: 'home',
+  resumeText: '',
+  resumeFileName: '',
+  jdText: '',
+  activeTab: 'resume',
+  fileError: '',
+  generatedPrompt: '',
+  addingNewPoints: false,
+  newPoints: { experience:'', education:'', achievements:'', certifications:'', leadership:'', skills:'', other:'' },
+  scratchStep: 0,
+  scratchAnswers: {},
+  scratchCurrentQ: 0,
+  scratch: {
+    name:'', email:'', phone:'', linkedin:'', location:'',
+    eduDegree:'', eduInstitution:'', eduYear:'', eduScore:'', eduDistinctions:'',
+    expRoles:'', skills:'', achievements:'', certifications:'', leadership:'', scratchJd:'',
+  },
+  eduEntries: [{ degree:'', institution:'', year:'', score:'', distinctions:'' }],
+  expEntries: [{ title:'', company:'', startDate:'', endDate:'', current:false, bullets:'' }],
+};
+
+function setState(upd) { Object.assign(state, upd); render(); }
+function el(id) { return document.getElementById(id); }
+
+function saveInputs() {
+  const r = el('resumeText'), j = el('jdText');
+  if (r) state.resumeText = r.value;
+  if (j) state.jdText = j.value;
+  Object.keys(state.newPoints).forEach(k => { const f = el('np_'+k); if (f) state.newPoints[k] = f.value; });
+  Object.keys(state.scratch).forEach(k => { const f = el('sc_'+k); if (f) state.scratch[k] = f.value; });
+}
+function saveScratchStep() {
+  Object.keys(state.scratch).forEach(k => { const f = el('sc_'+k); if (f) state.scratch[k] = f.value; });
+}
+function switchTab(tab) { saveInputs(); setState({ activeTab: tab }); }
+function canProceed() { return state.resumeText.trim().length > 50 && state.jdText.trim().length > 20; }
+
+function progressWrap(pct, label) {
+  return `<div class="progress-wrap">
+    <div class="progress-label"><span>${label}</span><strong>${pct}%</strong></div>
+    <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
+  </div>`;
+}
+
+// ── CONSTANTS ───────────────────────────────────────────────────────
+const GUIDELINES = `
+═══════════════════════════════════════
+RESUME QUALITY GUIDELINES (NON-NEGOTIABLE)
+═══════════════════════════════════════
+
+CONTENT & STRUCTURE
+• Tailored entirely to the job description — every section speaks to the role
+• ONE FULL PAGE — this means the page must be completely filled, edge to edge, with no empty space at the bottom. This is as strict as the one-page maximum: the resume must fill the page entirely.
+• Section order: Education → Experience → Achievements → Certifications → Leadership → Activities
+• No objective or summary section
+• No personal pronouns — never "I", "my", or "responsible for"
+• All dates include month and year
+• No unexplained timeline gaps
+
+EXPERIENCE BULLETS
+• Action verb starts every bullet
+• Every bullet quantified — numbers, %, team sizes, money, time saved
+• Max 12 words per bullet — tight and punchy
+• Most relevant bullets appear first within each role
+• Mirror JD language exactly where truthful
+• One sentence of company context — scope and scale clear
+• Current role: 3–4 bullets; older roles: max 2 bullets
+
+ACHIEVEMENTS
+• Rankings shown as fractions (e.g. 1/206, not "top 0.5%")
+• Prize amounts included where applicable
+• Only top 3 most relevant achievements shown
+• Academic distinctions clearly stated (rank, score, award name)
+
+EDUCATION
+• Degree, year, institution, score, and distinction all present
+• Exact GPA or percentage shown — not approximated
+• Any rank or award noted
+
+CERTIFICATIONS
+• Issuing body named for every certification
+• Month and year of completion included
+• Most relevant to JD listed first
+• Max 3 listed
+
+LEADERSHIP & ACTIVITIES
+• Team size quantified for every role
+• Measurable outcome stated for each
+• Role title, organisation, and date range on one line
+
+FORMATTING & DESIGN
+• Single font: Times New Roman throughout
+• Font sizes: 16pt name, 11pt section headers, 10pt body
+• Section headers in shaded blocks — visually distinct, ATS-friendly
+• All body text justified
+• Name in spaced ALL CAPS, centred, at top
+• Contact details on one line, pipe-separated, centred
+• No icons — plain text only
+• No hyperlink formatting on LinkedIn URL
+• Round bullet (•) used consistently
+• Margins: 0.5 inches on all sides
+• A4 page size, line spacing 1.0, 4pt after each bullet
+
+BOLD & ITALICS
+• Bold: key numbers, ranks, outcomes, titles, company names only
+• Italics: dates and institution names only
+• No decorative use of bold or italics
+
+ATS COMPATIBILITY
+• No layout tables, text boxes, headers/footers, or floating shapes
+• No images, logos, or graphics
+• Standard section names recognisable by ATS parsers
+• All text selectable — not embedded in images
+• Target ATS score: 85 or above
+
+LANGUAGE & TONE
+• Formal, third-person, factual tone
+• No filler words — every word earns its place
+• JD keywords included naturally
+• Consistent tense — past tense for previous roles, present for current`;
+
+const PAGE_FILL_RULES = `
+═══════════════════════════════════════
+FULL PAGE DENSITY RULES (MANDATORY)
+═══════════════════════════════════════
+
+The resume MUST fill one complete A4 page with zero empty space at the bottom.
+This is non-negotiable. A half-empty page is as unprofessional as a two-page resume.
+
+Before finalising, estimate the page fill percentage. If the resume is less than 95% full, apply the following strategies in order until the page is completely filled:
+
+STRATEGY 1 — Expand existing bullets (preferred first step)
+• Add a second dimension to any bullet that currently has only one metric
+  Example: "Saved 3 hours weekly" → "Saved 3 hours weekly across a team of 12, reducing monthly reporting overhead by 40%"
+• Expand company context sentences to include industry, client type, or scale
+• Add the outcome or business impact to any bullet that currently ends at the action
+
+STRATEGY 2 — Add bullets to existing roles
+• Current role may go up to 5 bullets if the page still has space
+• Older roles (if space allows) may go up to 3 bullets
+• Add bullets that address JD requirements not yet covered
+
+STRATEGY 3 — Add missing but relevant sections
+Add any of these sections if they apply to the candidate and space remains:
+• SKILLS — two-column list of technical and soft skills drawn from the JD and resume (e.g. "Financial Modelling | Power BI | Advanced Excel | Stakeholder Management")
+• RELEVANT COURSEWORK — 4–6 courses from the candidate's degree that are directly relevant to the JD
+• LANGUAGES — if the candidate speaks more than one language
+• VOLUNTEER WORK — if the candidate has relevant unpaid experience
+• PUBLICATIONS / RESEARCH — if applicable
+• KEY PROJECTS — one-line descriptions of relevant academic or professional projects
+
+STRATEGY 4 — Expand Education section
+• Add any academic distinctions, rankings, or awards not yet listed
+• Add relevant modules or thesis title if space allows
+
+STRATEGY 5 — Expand Achievements section
+• If fewer than 3 achievements are listed, add the next most relevant ones from the candidate's history
+• Add context or framing to existing achievements if they lack it
+
+HARD RULE: Never pad with filler, repetition, or irrelevant content. Every word added must be truthful, specific, and purposeful. The page should feel dense and intentional — not stretched.
+
+After applying these strategies, the resume must look and feel like it was designed to fill exactly one page.`;
+
+// ── SCRATCH constants ────────────────────────────────────────────────
+const SCRATCH_STEPS = ['personal','education','experience','skills','achievements','certifications','leadership','jd','questions','prompt'];
+const SCRATCH_QUESTIONS = [
+  { id:'q1', label:'Key strengths', q:'What are your top 3 professional strengths or things you are known for? (e.g. analytical thinking, stakeholder management, financial modelling)' },
+  { id:'q2', label:'Biggest achievement', q:'What is your single biggest career or academic achievement — ideally with a number, rank, or outcome?' },
+  { id:'q3', label:'JD gap', q:'Looking at the job description, which requirement do you feel is your weakest match? Tell us anything you have done that relates to it, even loosely.' },
+  { id:'q4', label:'Metrics', q:'Pick any ONE role or project you listed and give us 2–3 specific numbers: team size, revenue, percentage improvement, time saved, etc.' },
+  { id:'q5', label:'Extra context', q:'Is there anything else — a language, a side project, a publication, or unpaid work — that is relevant to this role but not yet mentioned?' },
+];
+
+// ── PROMPT BUILDERS ──────────────────────────────────────────────────
+function buildPrompt(resume, jd, newPoints) {
+  const npBlock = newPoints ? (() => {
+    const secs = Object.entries(newPoints).filter(([,v]) => v.trim());
+    if (!secs.length) return '';
+    return `\n═══════════════════════════════════════\nNEW POINTS TO INCORPORATE\n═══════════════════════════════════════\nThe candidate wants the following NEW information woven into the relevant sections of the resume. Incorporate these naturally and truthfully — do not omit any of them.\n\n${secs.map(([k,v])=>`${k.toUpperCase()}:\n${v.trim()}`).join('\n\n')}\n`;
+  })() : '';
+  return `You are an expert resume writer working for kan.grow. Your job is to produce a world-class, ATS-optimised resume that fills exactly one complete A4 page — no overflow, no empty space — and directly satisfies every requirement in the job description.
+
+You will follow a strict 4-step process. Do NOT skip ahead or combine steps.
+
+CRITICAL RULE — CONTACT DETAILS: The candidate's full name, phone number, email address, LinkedIn URL, and location must be copied verbatim from the resume provided below. Never invent, alter, or approximate any contact detail. If a detail is not present in the resume, omit it entirely — do not fabricate it.
+
+${GUIDELINES}
+${PAGE_FILL_RULES}
+
+═══════════════════════════════════════
+CANDIDATE'S LATEST RESUME
+═══════════════════════════════════════
+${resume.trim()}
+${npBlock}
+═══════════════════════════════════════
+TARGET JOB DESCRIPTION
+═══════════════════════════════════════
+${jd.trim()}
+
+═══════════════════════════════════════
+YOUR PROCESS — FOLLOW EXACTLY
+═══════════════════════════════════════
+
+STEP 1 — KEYWORD & ATS ANALYSIS
+- Extract the top 12 ATS keywords and skills from the JD
+- Score the current resume's ATS match (0–100)
+- Note which keywords are present and which are missing
+
+STEP 1B — REQUIREMENT MAPPING (mandatory)
+Go through every stated requirement in the JD — must-haves and nice-to-haves — one by one.
+For each requirement, assign one of three statuses:
+
+  ✓ MET       — clearly evidenced in the current resume (cite the specific bullet or section)
+  ~ PARTIAL   — present but weak, vague, or unquantified
+  ✗ MISSING   — not addressed at all in the current resume
+
+Present this as a clean table:
+  Requirement | Status | Evidence / Gap
+
+After the table, list the top 5 highest-priority gaps — the ones that, if addressed, would most improve the candidate's match. These become the basis for your questions in Step 2.
+
+STEP 2 — QUESTION ROUND (5 rounds, one question at a time)
+Ask exactly ONE question per message. Wait for the candidate's answer before asking the next.
+Total of 5 questions maximum — no more.
+
+Base your questions on the gaps from Step 1B, prioritised by impact:
+1. MISSING requirements — can the candidate evidence these from experience not yet on the resume?
+2. PARTIAL requirements — what numbers, outcomes, or context would strengthen them?
+3. Unquantified bullets — specific figures: team sizes, %, revenue, time saved, money involved
+4. Achievements missing fractions or prize amounts
+5. Any additional skills, projects, coursework, or activities that could fill remaining page space
+
+Frame every question specifically — reference the exact JD requirement and the gap.
+After each answer, briefly confirm what you'll use, then ask the next question.
+After question 5 is answered, say: "Thank you — I have everything I need. Generating your resume now."
+
+STEP 3 — PRE-WRITE CHECKS (run both before writing a single line)
+
+Check A — Requirement coverage:
+- Every ✓ MET requirement must appear explicitly in the final resume
+- Every ~ PARTIAL must be strengthened using the candidate's answers
+- Every ✗ MISSING addressed in Q&A must now appear in the resume
+- Any ✗ MISSING the candidate could not address must NOT be fabricated — omit honestly
+
+Check B — Page fill plan:
+- Estimate how full the resume will be after writing the core sections
+- If estimated fill is below 95%, identify exactly which Page Fill Strategies (1–5) you will apply and to which sections
+- Plan the additional content before writing — do not discover the gap after the fact
+
+STEP 4 — WRITE THE RESUME
+Produce the final resume strictly following every guideline and page fill rule above.
+
+Format rules for your output:
+- Plain text only — no markdown bold (**), no asterisks, no headers with #
+- HEADER (MANDATORY): Extract the candidate's full name, phone number, email, LinkedIn URL, and location EXACTLY as they appear in the resume above. Copy them verbatim — do NOT invent, alter, or approximate any contact detail. If a field is absent from the resume, omit it entirely.
+- Use ALL CAPS for the candidate name
+- Use ALL CAPS for section headers
+- Use • for bullets
+- Write dates in plain text (the candidate will italicise in Word)
+- After the resume body, show this summary:
+
+  REQUIREMENT COVERAGE SUMMARY
+  ✓ Met: [n] requirements
+  ~ Strengthened: [n] requirements
+  ✗ Not evidenced (honestly omitted): [n] requirements
+  ✓ ATS Score: [score]/100
+  ✓ Estimated page fill: [%]
+
+Begin now with Step 1, then Step 1B, then ask Question 1.`;
+}
+
+function buildScratchPrompt(s, answers) {
+  const qa = SCRATCH_QUESTIONS.map(q=>`Q: ${q.q}\nA: ${answers[q.id]||'(not answered)'}`).join('\n\n');
+
+  const eduBlock = state.eduEntries.map((e, i) => {
+    const lines = [
+      e.degree       ? `Degree: ${e.degree}` : null,
+      e.institution  ? `Institution: ${e.institution}` : null,
+      e.year         ? `Year: ${e.year}` : null,
+      e.score        ? `Score / GPA: ${e.score}` : null,
+      e.distinctions ? `Distinctions: ${e.distinctions}` : null,
+    ].filter(Boolean);
+    return lines.length ? `Qualification ${i+1}:\n${lines.join('\n')}` : null;
+  }).filter(Boolean).join('\n\n') || 'None provided';
+
+  const expBlock = state.expEntries.map((e, i) => {
+    const lines = [
+      e.title     ? `Title: ${e.title}` : null,
+      e.company   ? `Company: ${e.company}` : null,
+      (e.startDate || e.endDate) ? `Dates: ${e.startDate||''}${e.startDate?' – ':''}${e.current ? 'Present' : (e.endDate||'')}` : null,
+      e.bullets   ? `Responsibilities & achievements:\n${e.bullets}` : null,
+    ].filter(Boolean);
+    return lines.length ? `Role ${i+1}:\n${lines.join('\n')}` : null;
+  }).filter(Boolean).join('\n\n') || 'None provided';
+
+  return `You are an expert resume writer working for kan.grow. Your job is to produce a world-class, ATS-optimised resume built entirely FROM SCRATCH using the candidate information below. The resume must fill exactly one complete A4 page — no overflow, no empty space — and directly satisfy every requirement in the job description.
+
+You will follow a strict 3-step process. Do NOT skip ahead or combine steps.
+
+CRITICAL RULE — CONTACT DETAILS: Use ONLY the contact details provided below. Never invent, alter, or approximate any contact detail. If a detail is not provided, omit it entirely.
+
+${GUIDELINES}
+${PAGE_FILL_RULES}
+
+═══════════════════════════════════════
+CANDIDATE INFORMATION (BUILD FROM THIS)
+═══════════════════════════════════════
+
+PERSONAL DETAILS
+Name: ${s.name}
+Email: ${s.email}
+Phone: ${s.phone}
+LinkedIn: ${s.linkedin}
+Location: ${s.location}
+
+EDUCATION
+${eduBlock}
+
+WORK EXPERIENCE
+${expBlock}
+
+SKILLS
+${s.skills||'None provided'}
+
+ACHIEVEMENTS
+${s.achievements||'None provided'}
+
+CERTIFICATIONS
+${s.certifications||'None provided'}
+
+LEADERSHIP & ACTIVITIES
+${s.leadership||'None provided'}
+
+═══════════════════════════════════════
+ADDITIONAL CONTEXT FROM Q&A
+═══════════════════════════════════════
+${qa}
+
+═══════════════════════════════════════
+TARGET JOB DESCRIPTION
+═══════════════════════════════════════
+${s.scratchJd.trim()}
+
+═══════════════════════════════════════
+YOUR PROCESS — FOLLOW EXACTLY
+═══════════════════════════════════════
+
+STEP 1 — KEYWORD & REQUIREMENT ANALYSIS
+- Extract the top 12 ATS keywords and skills from the JD
+- Map every stated JD requirement to the candidate's information above:
+  ✓ MET       — clearly evidenced in the information provided
+  ~ PARTIAL   — present but needs strengthening
+  ✗ MISSING   — not addressed in the information provided (do NOT fabricate)
+
+Present as a clean table:
+  Requirement | Status | Evidence / Gap
+
+STEP 2 — PRE-WRITE PAGE FILL PLAN
+- Estimate how full the resume will be
+- If below 95%, identify exactly which Page Fill Strategies (1–5) you will apply
+- Plan all content before writing
+
+STEP 3 — WRITE THE RESUME
+Produce the final resume strictly following every guideline and page fill rule above.
+
+Format rules for your output:
+- Plain text only — no markdown bold (**), no asterisks, no headers with #
+- Use ALL CAPS for the candidate name
+- Use ALL CAPS for section headers
+- Use • for bullets
+- Write dates in plain text (the candidate will italicise in Word)
+- After the resume body, show this summary:
+
+  REQUIREMENT COVERAGE SUMMARY
+  ✓ Met: [n] requirements
+  ~ Strengthened: [n] requirements
+  ✗ Not evidenced (honestly omitted): [n] requirements
+  ✓ ATS Score: [score]/100
+  ✓ Estimated page fill: [%]
+
+Begin now with Step 1, then Step 2, then write the resume.`;
+}
+
+// ── HELPERS ─────────────────────────────────────────────────────────
+function escHtml(str) { return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function render() { el('root').innerHTML = screens(); }
+function updateBtn() { const b = el('genBtn'); if(b) b.disabled = !canProceed(); }
+function updateScratchBtn() {
+  const b = el('scratchNextBtn');
+  if (!b) return;
+  // re-evaluate canNext based on current state
+  const step = state.scratchStep;
+  const FLOW = ['personal','education','experience','skills','achievements','certifications','leadership','jd'];
+  const requiredIds = {
+    personal: ['name','email','phone'],
+    education: ['eduDegree','eduInstitution'],
+    experience: [], skills: [], achievements: [], certifications: [], leadership: [],
+    jd: [],
+  };
+  const ids = requiredIds[FLOW[step]] || [];
+  b.disabled = !ids.every(id => (state.scratch[id]||'').trim().length > 0);
+}
+function updateResumeUI() {
+  const len = state.resumeText.trim().length;
+  const charEl = document.querySelector('.char-count');
+  if (charEl) charEl.textContent = len + ' characters';
+  const successNotice = el('resumeSuccessNotice');
+  const tipNotice = el('resumeTipNotice');
+  if (successNotice) successNotice.style.display = len > 50 ? '' : 'none';
+  if (tipNotice) tipNotice.style.display = len > 50 ? 'none' : '';
+}
+
+function generate() {
+  saveInputs();
+  if (!canProceed()) return;
+  setState({ generatedPrompt: buildPrompt(state.resumeText, state.jdText, state.addingNewPoints ? state.newPoints : null), screen: 'prompt' });
+}
+
+function copyPrompt() {
+  navigator.clipboard.writeText(state.generatedPrompt).then(() => {
+    const btn = el('copyBtn');
+    if (btn) { btn.innerHTML = '✓ Copied!'; setTimeout(()=>{ btn.innerHTML='Copy prompt'; }, 2500); }
+  });
+}
+
+function decideNewPoints(choice) {
+  saveInputs();
+  if (choice) { setState({ addingNewPoints: true, screen: 'newpoints' }); }
+  else { setState({ addingNewPoints: false, screen: 'input', activeTab: 'jd' }); }
+}
+function submitNewPoints() { saveInputs(); setState({ screen: 'input', activeTab: 'jd' }); }
+
+function scratchNext() { saveEntries(); saveScratchStep(); setState({ scratchStep: state.scratchStep + 1 }); }
+function scratchBack() { saveEntries(); saveScratchStep(); setState({ scratchStep: state.scratchStep - 1 }); }
+
+// Save structured entry fields from DOM into state arrays
+function saveEntries() {
+  // Education entries
+  state.eduEntries.forEach((e, i) => {
+    ['degree','institution','year','score','distinctions'].forEach(k => {
+      const f = el(`edu_${i}_${k}`); if (f) e[k] = f.value;
+    });
+  });
+  // Experience entries
+  state.expEntries.forEach((e, i) => {
+    ['title','company','startDate','endDate','bullets'].forEach(k => {
+      const f = el(`exp_${i}_${k}`); if (f) e[k] = f.value;
+    });
+    const cb = el(`exp_${i}_current`); if (cb) e.current = cb.checked;
+  });
+}
+
+function addEduEntry() {
+  saveEntries();
+  state.eduEntries.push({ degree:'', institution:'', year:'', score:'', distinctions:'' });
+  render();
+}
+function removeEduEntry(i) {
+  saveEntries();
+  if (state.eduEntries.length > 1) { state.eduEntries.splice(i, 1); render(); }
+}
+function addExpEntry() {
+  saveEntries();
+  state.expEntries.push({ title:'', company:'', startDate:'', endDate:'', current:false, bullets:'' });
+  render();
+}
+function removeExpEntry(i) {
+  saveEntries();
+  if (state.expEntries.length > 1) { state.expEntries.splice(i, 1); render(); }
+}
+function toggleCurrentJob(i) {
+  saveEntries();
+  state.expEntries[i].current = !state.expEntries[i].current;
+  render();
+}
+function saveScratchAnswer() {
+  const f = el('scratchAnswer');
+  if (f) {
+    const answers = Object.assign({}, state.scratchAnswers);
+    answers[SCRATCH_QUESTIONS[state.scratchCurrentQ].id] = f.value.trim();
+    const next = state.scratchCurrentQ + 1;
+    if (next >= SCRATCH_QUESTIONS.length) {
+      setState({ scratchAnswers: answers, scratchStep: 9, screen: 'prompt', generatedPrompt: buildScratchPrompt(state.scratch, answers) });
+    } else {
+      setState({ scratchAnswers: answers, scratchCurrentQ: next });
+    }
+  }
+}
+
+function handleDrag(e) { e.preventDefault(); el('dropZone')?.classList.add('dragover'); }
+function handleDragLeave() { el('dropZone')?.classList.remove('dragover'); }
+function handleDrop(e) { e.preventDefault(); el('dropZone')?.classList.remove('dragover'); if(e.dataTransfer.files[0]) processFile(e.dataTransfer.files[0]); }
+function handleFile(e) { if(e.target.files[0]) processFile(e.target.files[0]); }
+
+function processFile(file) {
+  const ext = file.name.split('.').pop().toLowerCase();
+  setState({ fileError: '', resumeFileName: file.name });
+  if (ext === 'txt') {
+    const reader = new FileReader();
+    reader.onload = ev => setState({ resumeText: ev.target.result, resumeFileName: file.name });
+    reader.readAsText(file);
+  } else if (ext === 'docx') {
+    if (typeof mammoth === 'undefined') { setState({ fileError: 'Parser still loading — try again in a moment.' }); return; }
+    const reader = new FileReader();
+    reader.onload = ev => {
+      mammoth.extractRawText({ arrayBuffer: ev.target.result })
+        .then(r => {
+          if (!r.value || r.value.trim().length < 10) setState({ fileError: 'Could not extract text. Please paste your resume below.' });
+          else setState({ resumeText: r.value, resumeFileName: file.name, fileError: '' });
+        })
+        .catch(() => setState({ fileError: 'Failed to read DOCX. Please paste your resume text below.' }));
+    };
+    reader.readAsArrayBuffer(file);
+  } else if (ext === 'pdf') {
+    if (typeof pdfjsLib === 'undefined') { setState({ fileError: 'PDF parser still loading — please try again in a moment.' }); return; }
+    const reader = new FileReader();
+    reader.onload = ev => {
+      const buffer = ev.target.result.slice(0);
+      pdfjsLib.getDocument({ data: buffer }).promise
+        .then(async pdf => {
+          const texts = [];
+          for (let i = 1; i <= pdf.numPages; i++) {
+            const page = await pdf.getPage(i);
+            const content = await page.getTextContent();
+            let pageText = '', lastY = null;
+            for (const item of content.items) {
+              if (!item.str) continue;
+              const y = item.transform ? item.transform[5] : null;
+              if (lastY !== null && y !== null && Math.abs(y - lastY) > 2) pageText += '\n';
+              else if (pageText && !pageText.endsWith(' ') && item.str !== ' ') pageText += ' ';
+              pageText += item.str; lastY = y;
+            }
+            texts.push(pageText);
+          }
+          const text = texts.join('\n\n').trim();
+          if (!text || text.length < 10) setState({ fileError: 'This PDF appears to be image-based (scanned). Please paste your resume text below instead.' });
+          else setState({ resumeText: text, resumeFileName: file.name, fileError: '' });
+        })
+        .catch(err => { console.error('PDF error:', err); setState({ fileError: 'Failed to read PDF — try a different file or paste your resume text below.' }); });
+    };
+    reader.onerror = () => setState({ fileError: 'Could not read the file. Please try again or paste your resume below.' });
+    reader.readAsArrayBuffer(file);
+  } else {
+    setState({ fileError: 'Please upload DOCX, PDF, or TXT.' });
+  }
+}
+
+// ── SCREENS ──────────────────────────────────────────────────────────
+function screens() {
+  switch(state.screen) {
+
+    // ── HOME ─────────────────────────────────────────────────────────
+    case 'home': return `
+      <div class="screen">
+        <h1>A resume that gets<br><em>you the interview.</em></h1>
+        <p class="subtitle">This tool builds a tailored prompt you paste into Claude AI — Claude then maps the job description, asks you 5 targeted questions, and writes a full-page, ATS-optimised resume.</p>
+        <div class="guidelines-grid">
+          ${[
+            ['✓','Full page — zero empty space'],
+            ['✓','Every JD requirement mapped'],
+            ['✓','ATS score 85+ guaranteed'],
+            ['✓','Quantified bullet points'],
+            ['✓','5-question Q&A with Claude'],
+            ['✓','No filler — every word earns its place'],
+          ].map(([i,t])=>`<div class="guideline-chip"><span>${i}</span><span>${t}</span></div>`).join('')}
+        </div>
+
+        <p style="font-size:13px;font-weight:500;color:var(--ink2);margin-bottom:10px;text-transform:uppercase;letter-spacing:0.5px;">Choose how to start</p>
+        <div class="choice-grid">
+          <button class="choice-card primary" onclick="setState({screen:'input',addingNewPoints:false,resumeText:'',resumeFileName:'',jdText:'',fileError:'',newPoints:{experience:'',education:'',achievements:'',certifications:'',leadership:'',skills:'',other:''}})">
+            <div class="choice-icon">📄</div>
+            <div class="choice-title">Update my latest resume</div>
+            <div class="choice-desc">You have an existing resume. We'll tailor it to a specific job and optionally add new information.</div>
+            <span class="choice-tag">Most common</span>
+          </button>
+          <button class="choice-card" onclick="setState({screen:'scratch',scratchStep:0,scratchCurrentQ:0,scratchAnswers:{},generatedPrompt:'',eduEntries:[{degree:'',institution:'',year:'',score:'',distinctions:''}],expEntries:[{title:'',company:'',startDate:'',endDate:'',current:false,bullets:''}],scratch:{name:'',email:'',phone:'',linkedin:'',location:'',eduDegree:'',eduInstitution:'',eduYear:'',eduScore:'',eduDistinctions:'',expRoles:'',skills:'',achievements:'',certifications:'',leadership:'',scratchJd:''}})">
+            <div class="choice-icon">✏️</div>
+            <div class="choice-title">Build from scratch</div>
+            <div class="choice-desc">No existing resume? We'll collect all your details step by step and build one from zero.</div>
+            <span class="choice-tag">~5 minutes</span>
+          </button>
+        </div>
+
+        <div style="margin-top:1.75rem">
+          <div class="card" style="padding:1.25rem 1.5rem">
+            <div class="card-label" style="margin-bottom:0.75rem">How it works — end to end</div>
+            ${[
+              ['1','Upload or enter your resume &amp; job description','Takes about 30 seconds'],
+              ['2','Generate your custom prompt','One click — expertly crafted for Claude AI'],
+              ['3','Open Claude.ai and paste the prompt','Free account works perfectly — claude.ai'],
+              ['4','Claude maps every JD requirement','Shows what\'s met ✓, partial ~, or missing ✗'],
+              ['5','Answer 5 targeted questions in Claude','Claude asks one at a time — just type your answers'],
+              ['6','Claude writes your final resume','Full page, ATS-ready, every requirement addressed'],
+            ].map(([n,t,d])=>`
+              <div class="step-card">
+                <div class="step-num">${n}</div>
+                <div><div class="step-title">${t}</div><div class="step-desc">${d}</div></div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      </div>`;
+
+    // ── INPUT ────────────────────────────────────────────────────────
+    case 'input': return `
+      <div class="screen">
+        ${progressWrap(30, 'Step 1 of 3 — Your resume')}
+        <h2>Upload your latest resume</h2>
+        <p class="subtitle">Upload or paste your most recent resume below. The AI will build on it — not replace it.</p>
+
+        <div class="tab-row">
+          <div class="tab ${state.activeTab==='resume'?'active':''}" onclick="switchTab('resume')">
+            📄 My Resume ${state.resumeText.trim().length > 50 ? '✓' : ''}
+          </div>
+          <div class="tab ${state.activeTab==='jd'?'active':''}" onclick="switchTab('jd')">
+            💼 Job Description ${state.jdText.trim().length > 20 ? '✓' : ''}
+          </div>
+        </div>
+
+        ${state.activeTab === 'resume' ? `
+          ${state.fileError ? `<div class="error-notice"><span>⚠</span><span>${state.fileError}</span></div>` : ''}
+
+          <div class="drop-zone" id="dropZone" onclick="el('fileInput').click()" ondragover="handleDrag(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)">
+            <div style="font-size:28px;margin-bottom:6px">📂</div>
+            <p><strong>Click to upload</strong> or drag & drop your resume here</p>
+            <p>Accepts DOCX, PDF, or TXT</p>
+            ${state.resumeFileName ? `<p class="file-chosen">✓ ${state.resumeFileName} uploaded successfully</p>` : ''}
+          </div>
+          <input type="file" id="fileInput" accept=".docx,.txt,.pdf" onchange="handleFile(event)">
+
+          ${state.resumeText.trim().length > 50 ? `
+            <div id="resumeSuccessNotice" class="success-notice">
+              <span>✓</span>
+              <span>Resume loaded — <strong>${state.resumeText.trim().length} characters</strong> extracted. You can review or edit the text below before continuing.</span>
+            </div>
+          ` : `
+            <div id="resumeSuccessNotice" class="success-notice" style="display:none">
+              <span>✓</span>
+              <span>Resume loaded. You can review or edit the text below before continuing.</span>
+            </div>
+          `}
+          ${state.resumeText.trim().length > 50 ? `
+            <div id="resumeTipNotice" class="tip-notice" style="display:none">
+          ` : `
+            <div id="resumeTipNotice" class="tip-notice">
+          `}
+              <span>💡</span>
+              <span>Your file will be converted to plain text automatically. You can also paste your resume directly into the box below.</span>
+            </div>
+
+          <div class="card-label" style="margin-bottom:6px;margin-top:0.5rem">Resume text ${state.resumeText.trim().length > 50 ? '— review &amp; edit if needed' : '— or paste here'}</div>
+          <textarea id="resumeText" rows="10" placeholder="Paste your resume here, or upload a file above..." oninput="state.resumeText=this.value;updateBtn();updateResumeUI()">${state.resumeText}</textarea>
+          <div class="char-count">${state.resumeText.trim().length} characters</div>
+          ${state.resumeText.trim().length > 50 ? `
+            <div class="btn-row" style="margin-top:1rem">
+              <button class="btn btn-primary" onclick="switchTab('jd')">Continue to job description →</button>
+            </div>
+          ` : ''}
+        ` : `
+          <div class="info-notice">
+            <span>💼</span>
+            <span>Paste the <strong>full</strong> job description — including responsibilities, requirements, and qualifications. The more complete, the better the resume.</span>
+          </div>
+          <div class="card-label" style="margin-bottom:6px">Job description</div>
+          <textarea id="jdText" rows="14" placeholder="Paste the full job description here — requirements, responsibilities, qualifications, and any preferred skills..." oninput="state.jdText=this.value;updateBtn()">${state.jdText}</textarea>
+          <div class="char-count">${state.jdText.trim().length} characters</div>
+          ${state.jdText.trim().length > 20 ? `
+            <div class="success-notice" style="margin-top:0.75rem">
+              <span>✓</span>
+              <span>Job description added. Click <strong>Generate prompt</strong> below when ready.</span>
+            </div>
+          ` : ''}
+        `}
+
+        <div class="btn-row">
+          <button class="btn btn-outline" onclick="setState({screen:'home'})">← Back</button>
+          ${state.activeTab === 'jd' ? `<button class="btn btn-primary" id="genBtn" onclick="generate()" ${canProceed()?'':'disabled'}>Generate prompt →</button>` : ''}
+        </div>
+      </div>`;
+
+    // ── NEW POINTS ───────────────────────────────────────────────────
+    case 'newpoints': return `
+      <div class="screen">
+        ${progressWrap(55, 'Step 1b of 3 — New information')}
+        <h2>Add new information</h2>
+        <p class="subtitle">Fill in only the sections where you have something new. Leave everything else blank — the AI will keep your existing content.</p>
+        <div class="info-notice">
+          <span>ℹ</span>
+          <span>These new points will be <strong>woven into your existing resume</strong> by the AI — not just appended. Write naturally; Claude will format everything correctly.</span>
+        </div>
+        ${[
+          ['experience','Experience','New roles, promotions, or achievements in existing roles — one point per line.','e.g.\nLed a team of 8 analysts to deliver a $2M cost-saving initiative\nPromoted to Senior Analyst in March 2024'],
+          ['education','Education','New degrees, completed courses, or academic distinctions.','e.g.\nCompleted CFA Level 1, June 2024'],
+          ['achievements','Achievements','New awards, rankings, prizes, or recognitions.','e.g.\nRanked 3/180 in national case competition, Oct 2024'],
+          ['certifications','Certifications','New certifications — include issuing body and date.','e.g.\nGoogle Data Analytics Certificate, Coursera, Aug 2024'],
+          ['leadership','Leadership & Activities','New clubs, volunteer roles, or leadership positions.','e.g.\nVice President, Finance Society — managed 200-member club'],
+          ['skills','Skills','New tools, software languages, or technical skills.','e.g.\nPower BI, Python (pandas, matplotlib), Tableau'],
+          ['other','Other','Anything else not covered above.','e.g.\nPublished article in university journal on ESG investing'],
+        ].map(([k,label,hint,placeholder])=>`
+          <div class="card" style="margin-bottom:0.75rem;padding:1rem 1.25rem">
+            <div class="card-label" style="margin-bottom:4px">${label}</div>
+            <p class="field-hint" style="margin-bottom:8px">${hint}</p>
+            <textarea id="np_${k}" rows="3" placeholder="${placeholder}" style="font-size:13px">${state.newPoints[k]}</textarea>
+          </div>
+        `).join('')}
+        <div class="btn-row">
+          <button class="btn btn-outline" onclick="setState({screen:'input',activeTab:'resume'})">← Back to resume</button>
+          <button class="btn btn-primary" onclick="submitNewPoints()">Continue to job description →</button>
+        </div>
+      </div>`;
+
+    // ── PROMPT ───────────────────────────────────────────────────────
+    case 'prompt': return `
+      <div class="screen">
+        ${progressWrap(100, 'Done — your prompt is ready')}
+        <h2>Your prompt is ready 🎉</h2>
+        <p class="subtitle">Copy the prompt below, open Claude.ai, and paste it in. Claude will take it from there.</p>
+
+        <div style="display:flex;gap:6px;margin-bottom:1.25rem;flex-wrap:wrap">
+          <span class="badge badge-green">Full page · zero empty space</span>
+          <span class="badge badge-green">JD requirements mapped</span>
+          <span class="badge badge-green">ATS 85+ target</span>
+          <span class="badge badge-gold">kan.grow standard</span>
+        </div>
+
+        <div style="position:relative">
+          <div class="prompt-box" id="promptBox">${escHtml(state.generatedPrompt)}</div>
+          <div class="prompt-fade"></div>
+        </div>
+
+        <div class="btn-row" style="margin-top:0.75rem">
+          <button class="btn btn-primary" id="copyBtn" onclick="copyPrompt()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            Copy prompt
+          </button>
+          <button class="btn btn-outline" onclick="setState({screen: state.scratchStep === 9 ? 'scratch' : 'input'})">← Edit inputs</button>
+          <button class="btn btn-ghost" onclick="setState({screen:'home',resumeText:'',jdText:'',resumeFileName:'',generatedPrompt:'',scratchStep:0})">Start over</button>
+        </div>
+
+        <div class="divider"></div>
+
+        <div style="background:var(--accent);border-radius:var(--radius);padding:1.25rem 1.5rem;margin-bottom:1rem">
+          <p style="font-size:13px;font-weight:500;color:white;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.5px;">Next step</p>
+          <p style="font-size:15px;color:white;font-weight:500;margin-bottom:12px">Open Claude.ai, start a new chat, and paste the prompt</p>
+          <a class="ai-chip" href="https://claude.ai" target="_blank" style="background:white;color:var(--accent);border:none;font-weight:600">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z"/></svg>
+            Open Claude.ai (free account works)
+          </a>
+          <p style="font-size:12px;color:rgba(255,255,255,0.75);margin-top:10px">No account? Sign up free at claude.ai — no credit card needed.</p>
+        </div>
+
+        <div class="tip-notice">
+          <span>💬</span>
+          <div>
+            <strong>Heads up — Claude will ask you questions before writing your resume.</strong><br>
+            After you paste the prompt, Claude will first analyse the job description, then ask you up to <strong>5 targeted questions</strong> — one at a time. Just answer each one honestly. After the 5th answer, Claude will say <em>"Thank you — generating your resume now"</em> and write the full resume.
+          </div>
+        </div>
+
+        <div class="next-panel">
+          <div class="next-panel-title">What Claude will do, step by step</div>
+          ${[
+            ['1','Score ATS keywords — matched against the job description'],
+            ['2','Map every JD requirement — ✓ Met, ~ Partial, or ✗ Missing'],
+            ['3','Ask you 5 targeted questions — one at a time, answer each in Claude'],
+            ['4','Plan the page fill — decides which sections to expand before writing'],
+            ['5','Write the resume — dense, full page, zero empty space at the bottom'],
+            ['6','Show a coverage summary — requirements met, ATS score, page fill %'],
+          ].map(([n,t])=>`<div class="next-row"><span class="next-row-num">${n}.</span><span>${t}</span></div>`).join('')}
+        </div>
+
+        <div class="info-notice" style="margin-top:1rem">
+          <span>💡</span>
+          <span>Questions about your resume or this tool? Reach out to Krina Sanghvi on <a href="${LINKEDIN}" target="_blank" style="color:var(--accent-dark);font-weight:500">LinkedIn</a>.</span>
+        </div>
+      </div>`;
+
+    // ── SCRATCH ──────────────────────────────────────────────────────
+    case 'scratch': {
+      const step = state.scratchStep;
+      const FLOW = ['personal','education','experience','skills','achievements','certifications','leadership','jd','questions','prompt'];
+      const pct = Math.round((step / (FLOW.length - 1)) * 100);
+      const stepLabel = ['Personal details','Education','Work experience','Skills','Achievements','Certifications','Leadership & Activities','Job description','Questions','Done'][step] || '';
+
+      const scratchFields = {
+        personal: {
+          title: 'Let\'s start with your details',
+          subtitle: 'These will appear in the header of your resume exactly as you enter them.',
+          fields: [
+            { id:'name', label:'Full name', placeholder:'Jane Smith', required:true },
+            { id:'email', label:'Email address', placeholder:'jane@email.com', required:true },
+            { id:'phone', label:'Phone number', placeholder:'+91 98765 43210', required:true },
+            { id:'linkedin', label:'LinkedIn URL', placeholder:'linkedin.com/in/janesmith', hint:'Optional but strongly recommended' },
+            { id:'location', label:'Location', placeholder:'Mumbai, India', hint:'City and country is enough' },
+          ]
+        },
+        education: {
+          title: 'Education',
+          subtitle: 'Your highest or most recent qualification. Include as much detail as you have.',
+          fields: [
+            { id:'eduDegree', label:'Degree & field of study', placeholder:'B.Com (Hons) — Finance', required:true },
+            { id:'eduInstitution', label:'Institution name', placeholder:'Narsee Monjee College of Commerce & Economics', required:true },
+            { id:'eduYear', label:'Graduation year (or expected)', placeholder:'2024' },
+            { id:'eduScore', label:'GPA / percentage / grade', placeholder:'9.1 CGPA / 87%', hint:'Include the exact number — not "high distinction"' },
+            { id:'eduDistinctions', label:'Distinctions, awards, or rank', placeholder:'Rank 2/340 · Dean\'s List · Gold Medallist', hint:'Include rankings as fractions, e.g. 2/340' },
+          ]
+        },
+        experience: {
+          title: 'Work experience',
+          subtitle: 'List all your roles. For each one: job title, company, dates, and 2–4 bullet points. Include numbers wherever possible.',
+          fields: [
+            { id:'expRoles', label:'All roles (most recent first)', placeholder:'Finance Intern — Goldman Sachs, Jun–Aug 2024\n• Built DCF models for 3 M&A transactions totalling $450M\n• Automated weekly P&L reporting, saving 6 hours/week\n\nAnalyst Trainee — KPMG, Jan–Apr 2024\n• Assisted audit of 12 client accounts across BFSI sector', rows:12, hint:'No experience yet? Write any internships, projects, or part-time work — even informal ones.' },
+          ]
+        },
+        skills: {
+          title: 'Skills',
+          subtitle: 'List your technical tools, software, and relevant soft skills. Don\'t overthink it — just list what you know.',
+          fields: [
+            { id:'skills', label:'Your skills', placeholder:'Financial Modelling · Excel (Advanced) · Power BI · Python · Bloomberg Terminal · Stakeholder Management · Mandarin (Conversational)', rows:4, hint:'Separate with commas or bullet points. Include languages, tools, and methodologies.' },
+          ]
+        },
+        achievements: {
+          title: 'Achievements',
+          subtitle: 'Awards, competition results, academic rankings. Include fractions and prize amounts wherever possible — they matter.',
+          fields: [
+            { id:'achievements', label:'Your achievements', placeholder:'1st Place / 206 teams — CFA Research Challenge India, Jan 2024 (Prize: ₹1L)\nTop 0.1% — CA Foundation Exam, May 2023\nBest Delegate — Harvard XIMUN, Feb 2023', rows:5, hint:'Use fractions (e.g. 1/206, not "top 0.5%"). Include the prize amount if there was one.' },
+          ]
+        },
+        certifications: {
+          title: 'Certifications',
+          subtitle: 'List your most relevant certifications. Include the issuing body and completion date.',
+          fields: [
+            { id:'certifications', label:'Your certifications', placeholder:'CFA Level 1 — CFA Institute, Jun 2024\nGoogle Data Analytics — Coursera / Google, Aug 2023\nBloomberg Market Concepts — Bloomberg LP, Jan 2023', rows:4, hint:'Max 3 most relevant. Format: Name — Issuing Body, Month Year' },
+          ]
+        },
+        leadership: {
+          title: 'Leadership & Activities',
+          subtitle: 'Clubs, societies, volunteer work, sports. Include your role, the organisation, dates, and a measurable outcome.',
+          fields: [
+            { id:'leadership', label:'Leadership & activities', placeholder:'Vice President — Finance & Investment Cell, NMIMS, Aug 2023–May 2024\n• Led 12-member team, organised 3 industry speaker events (500+ attendees)\n\nVolunteer — Teach For India, Jun–Aug 2022\n• Taught math to 30 underprivileged students, 92% pass rate', rows:6, hint:'Even small roles count. Include team sizes and outcomes where possible.' },
+          ]
+        },
+        jd: {
+          title: 'Target job description',
+          subtitle: 'Paste the full job description below — including requirements, responsibilities, and qualifications. The more complete, the better Claude can tailor your resume.',
+          fields: [
+            { id:'scratchJd', label:'Job description', placeholder:'Paste the full job description here — copy everything from the listing including responsibilities, requirements, and any preferred qualifications...', rows:14, hint:'Copy the entire posting, not just the title. Claude uses every detail to tailor your resume.' },
+          ]
+        },
+      };
+
+      if (step < 8) {
+        // Education step — multi-entry structured UI
+        if (step === 1) {
+          return `
+            <div class="screen">
+              ${progressWrap(pct, `Step ${step+1} of 8 — Education`)}
+              <h2>Education</h2>
+              <p class="subtitle">Add all your qualifications, most recent first. All fields are optional — fill in what you have.</p>
+              ${state.eduEntries.map((e, i) => `
+                <div class="entry-card">
+                  <div class="entry-card-header">
+                    <span class="entry-card-title">${i === 0 ? 'Most recent qualification' : `Qualification ${i+1}`}</span>
+                    ${state.eduEntries.length > 1 ? `<button class="entry-remove" onclick="removeEduEntry(${i})">✕ Remove</button>` : ''}
+                  </div>
+                  <div class="entry-fields">
+                    <div class="field-group full">
+                      <label>Degree &amp; field of study</label>
+                      <input id="edu_${i}_degree" type="text" placeholder="B.Com (Hons) — Finance" value="${e.degree||''}">
+                    </div>
+                    <div class="field-group full">
+                      <label>Institution name</label>
+                      <input id="edu_${i}_institution" type="text" placeholder="Narsee Monjee College of Commerce &amp; Economics" value="${e.institution||''}">
+                    </div>
+                    <div class="field-group">
+                      <label>Graduation year</label>
+                      <input id="edu_${i}_year" type="text" placeholder="2024 (or Expected 2025)" value="${e.year||''}">
+                    </div>
+                    <div class="field-group">
+                      <label>GPA / Score / Grade</label>
+                      <input id="edu_${i}_score" type="text" placeholder="9.1 CGPA / 87%" value="${e.score||''}">
+                    </div>
+                    <div class="field-group full">
+                      <label>Distinctions, awards, or rank</label>
+                      <input id="edu_${i}_distinctions" type="text" placeholder="Rank 2/340 · Dean's List · Gold Medallist" value="${e.distinctions||''}">
+                    </div>
+                  </div>
+                </div>
+              `).join('')}
+              <button class="add-entry-btn" onclick="addEduEntry()">
+                <span style="font-size:18px;line-height:1">+</span> Add another qualification
+              </button>
+              <div class="btn-row">
+                <button class="btn btn-outline" onclick="scratchBack()">← Back</button>
+                <button id="scratchNextBtn" class="btn btn-primary" onclick="scratchNext()">Next →</button>
+              </div>
+            </div>`;
+        }
+
+        // Experience step — multi-entry structured UI
+        if (step === 2) {
+          return `
+            <div class="screen">
+              ${progressWrap(pct, `Step ${step+1} of 8 — Work experience`)}
+              <h2>Work experience</h2>
+              <p class="subtitle">Add all your roles, most recent first. All fields are optional — include internships, part-time, and informal work too.</p>
+              ${state.expEntries.map((e, i) => `
+                <div class="entry-card">
+                  <div class="entry-card-header">
+                    <span class="entry-card-title">${i === 0 ? 'Most recent role' : `Role ${i+1}`}</span>
+                    ${state.expEntries.length > 1 ? `<button class="entry-remove" onclick="removeExpEntry(${i})">✕ Remove</button>` : ''}
+                  </div>
+                  <div class="entry-fields">
+                    <div class="field-group">
+                      <label>Job title</label>
+                      <input id="exp_${i}_title" type="text" placeholder="Finance Intern" value="${e.title||''}">
+                    </div>
+                    <div class="field-group">
+                      <label>Company / Organisation</label>
+                      <input id="exp_${i}_company" type="text" placeholder="Goldman Sachs" value="${e.company||''}">
+                    </div>
+                    <div class="field-group">
+                      <label>Start date</label>
+                      <input id="exp_${i}_startDate" type="text" placeholder="Jun 2024" value="${e.startDate||''}">
+                    </div>
+                    <div class="field-group">
+                      <label>End date</label>
+                      <input id="exp_${i}_endDate" type="text" placeholder="Aug 2024" value="${e.current ? 'Present' : (e.endDate||'')}" ${e.current ? 'disabled style="color:var(--ink3)"' : ''}>
+                      <label class="checkbox-row" style="text-transform:none;letter-spacing:0;font-weight:400">
+                        <input type="checkbox" id="exp_${i}_current" ${e.current?'checked':''} onchange="toggleCurrentJob(${i})"> I currently work here
+                      </label>
+                    </div>
+                    <div class="field-group full">
+                      <label>Key responsibilities &amp; achievements <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--ink3)">(one bullet per line, include numbers)</span></label>
+                      <textarea id="exp_${i}_bullets" rows="4" placeholder="• Built DCF models for 3 M&amp;A transactions totalling $450M&#10;• Automated weekly P&amp;L reporting, saving 6 hours/week&#10;• Presented findings to 12 senior stakeholders" style="font-size:13px">${e.bullets||''}</textarea>
+                      <p class="field-hint">Include team sizes, percentages, money, time saved — anything quantifiable.</p>
+                    </div>
+                  </div>
+                </div>
+              `).join('')}
+              <button class="add-entry-btn" onclick="addExpEntry()">
+                <span style="font-size:18px;line-height:1">+</span> Add another role
+              </button>
+              <div class="tip-notice">
+                <span>💡</span>
+                <div>No formal experience? Add internships, freelance projects, university society roles, or any unpaid work that shows relevant skills.</div>
+              </div>
+              <div class="btn-row">
+                <button class="btn btn-outline" onclick="scratchBack()">← Back</button>
+                <button id="scratchNextBtn" class="btn btn-primary" onclick="scratchNext()">Next →</button>
+              </div>
+            </div>`;
+        }
+
+        // All other steps — generic field renderer
+        const cfg = scratchFields[FLOW[step]];
+        const canNext = cfg.fields.filter(f=>f.required).every(f=>(state.scratch[f.id]||'').trim().length > 0);
+        return `
+          <div class="screen">
+            ${progressWrap(pct, `Step ${step+1} of 8 — ${stepLabel}`)}
+            <h2>${cfg.title}</h2>
+            <p class="subtitle">${cfg.subtitle}</p>
+            ${cfg.fields.map(f=>`
+              <div style="margin-bottom:1.1rem">
+                <div class="card-label" style="margin-bottom:5px">${f.label}${f.required?' <span style="color:var(--accent)">*</span>':' <span style="color:var(--ink3);font-size:10px;text-transform:none;letter-spacing:0">(optional)</span>'}</div>
+                <textarea id="sc_${f.id}" rows="${f.rows||2}" placeholder="${f.placeholder}" oninput="state.scratch['${f.id}']=this.value;updateScratchBtn()" style="font-size:14px">${state.scratch[f.id]||''}</textarea>
+                ${f.hint ? `<p class="field-hint">${f.hint}</p>` : ''}
+              </div>
+            `).join('')}
+            <div class="btn-row">
+              ${step > 0 ? `<button class="btn btn-outline" onclick="scratchBack()">← Back</button>` : `<button class="btn btn-outline" onclick="setState({screen:'home'})">← Home</button>`}
+              <button id="scratchNextBtn" class="btn btn-primary" onclick="scratchNext()" ${canNext?'':'disabled'}>
+                ${step === 7 ? 'Continue to questions →' : 'Next →'}
+              </button>
+            </div>
+            ${step === 7 ? `
+              <div class="tip-notice" style="margin-top:1rem">
+                <span>💬</span>
+                <div>After this, we'll ask you <strong>5 quick questions</strong> to gather detail Claude needs for stronger bullet points. Takes about 2 minutes.</div>
+              </div>
+            ` : ''}
+          </div>`;
+      }
+
+      // Step 8: questions
+      if (step === 8) {
+        const q = SCRATCH_QUESTIONS[state.scratchCurrentQ];
+        const answered = state.scratchAnswers[q.id] || '';
+        const isLast = state.scratchCurrentQ === SCRATCH_QUESTIONS.length - 1;
+        return `
+          <div class="screen">
+            ${progressWrap(pct, `Question ${state.scratchCurrentQ+1} of ${SCRATCH_QUESTIONS.length}`)}
+            <h2>A few quick questions</h2>
+            <p class="subtitle">These help Claude write stronger, more specific bullets. Answer as honestly and specifically as you can.</p>
+            <div class="info-notice" style="margin-bottom:1.25rem">
+              <span>💬</span>
+              <div>
+                <strong>Question ${state.scratchCurrentQ+1} of ${SCRATCH_QUESTIONS.length}</strong>
+                ${isLast ? ' — last one!' : ''}
+              </div>
+            </div>
+            <div class="card" style="margin-bottom:1rem">
+              <div class="card-label" style="margin-bottom:0.5rem">${q.label}</div>
+              <p style="font-size:14px;color:var(--ink);line-height:1.7;margin-bottom:1rem">${q.q}</p>
+              <textarea id="scratchAnswer" rows="4" placeholder="Type your answer here — be as specific as possible..." style="font-size:14px">${answered}</textarea>
+              <p class="field-hint" style="margin-top:6px">No need to be formal. Just write what comes to mind — Claude will shape it.</p>
+            </div>
+            <div class="btn-row">
+              <button class="btn btn-outline" onclick="${state.scratchCurrentQ===0 ? 'setState({scratchStep:7})' : 'setState({scratchCurrentQ:state.scratchCurrentQ-1})'}">← Back</button>
+              <button class="btn btn-primary" onclick="saveScratchAnswer()">
+                ${isLast ? 'Generate my prompt →' : 'Next question →'}
+              </button>
+            </div>
+            ${isLast ? `
+              <div class="tip-notice" style="margin-top:1rem">
+                <span>🎉</span>
+                <div>After this, your prompt will be ready to copy into Claude AI. Claude will then write your resume — no further input needed on your end until Claude starts asking its own questions.</div>
+              </div>
+            ` : ''}
+          </div>`;
+      }
+      return '';
+    }
+
+    default: return '';
+  }
+}
+
+render();
+</script>
+</body>
+</html>
