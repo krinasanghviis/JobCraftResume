@@ -1,11 +1,9 @@
 <!DOCTYPE html>
 <html>
-<head> 
-  <meta name="google-site-verification" content="aEVI1IyFuHh-AMpEoHlPOWxRzsB5z3rqJV5q5bNNlYU" />
-  
+<head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>kan.grow · Resume Builder | AI Resume Builder from Job Description | ATS-Friendly Resume Tool </title>
+<title>kan.grow · Resume Builder</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap');
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -257,6 +255,7 @@ CONTENT & STRUCTURE
 • Tailored entirely to the job description — every section speaks to the role
 • ONE FULL PAGE — this means the page must be completely filled, edge to edge, with no empty space at the bottom. This is as strict as the one-page maximum: the resume must fill the page entirely.
 • Section order: Education → Experience → Achievements → Certifications → Leadership → Activities
+• Each role at a different company must be listed as a SEPARATE entry — never group or combine roles from different companies, even if the job title is similar
 • No objective or summary section
 • No personal pronouns — never "I", "my", or "responsible for"
 • All dates include month and year
@@ -387,6 +386,8 @@ function buildPrompt(resume, jd, newPoints) {
 
 You will follow a strict 4-step process. Do NOT skip ahead or combine steps.
 
+CRITICAL RULE — NO MANUFACTURED INFORMATION: You must NEVER invent, assume, or fabricate any information about the candidate. Every bullet point, achievement, skill, date, number, company name, qualification, and responsibility must come directly from the resume text below or from the candidate's own answers during the Step 2 Q&A. If information is missing, ask for it in Step 2 — do not fill the gap with invented content. A resume with an honest gap is always better than one with fabricated information.
+
 CRITICAL RULE — CONTACT DETAILS: The candidate's full name, phone number, email address, LinkedIn URL, and location must be copied verbatim from the resume provided below. Never invent, alter, or approximate any contact detail. If a detail is not present in the resume, omit it entirely — do not fabricate it.
 
 ${GUIDELINES}
@@ -428,6 +429,8 @@ STEP 2 — QUESTION ROUND (5 rounds, one question at a time)
 Ask exactly ONE question per message. Wait for the candidate's answer before asking the next.
 Total of 5 questions maximum — no more.
 
+CRITICAL: If a candidate's answer is vague or lacks specifics (e.g. a number, date, or outcome), ask a targeted sub-question within the same round before moving on. Do NOT proceed until you have a concrete, usable answer. If the candidate genuinely does not have the information, accept it and move on — never invent a substitute.
+
 Base your questions on the gaps from Step 1B, prioritised by impact:
 1. MISSING requirements — can the candidate evidence these from experience not yet on the resume?
 2. PARTIAL requirements — what numbers, outcomes, or context would strengthen them?
@@ -438,6 +441,8 @@ Base your questions on the gaps from Step 1B, prioritised by impact:
 Frame every question specifically — reference the exact JD requirement and the gap.
 After each answer, briefly confirm what you'll use, then ask the next question.
 After question 5 is answered, say: "Thank you — I have everything I need. Generating your resume now."
+
+NEVER manufacture or assume any information the candidate has not explicitly provided. If a gap cannot be filled from the candidate's own answers, omit it honestly.
 
 STEP 3 — PRE-WRITE CHECKS (run both before writing a single line)
 
@@ -455,14 +460,26 @@ Check B — Page fill plan:
 STEP 4 — WRITE THE RESUME
 Produce the final resume strictly following every guideline and page fill rule above.
 
-Format rules for your output:
-- Plain text only — no markdown bold (**), no asterisks, no headers with #
-- HEADER (MANDATORY): Extract the candidate's full name, phone number, email, LinkedIn URL, and location EXACTLY as they appear in the resume above. Copy them verbatim — do NOT invent, alter, or approximate any contact detail. If a field is absent from the resume, omit it entirely.
-- Use ALL CAPS for the candidate name
-- Use ALL CAPS for section headers
-- Use • for bullets
-- Write dates in plain text (the candidate will italicise in Word)
-- After the resume body, show this summary:
+OUTPUT FORMAT — MANDATORY: DOCX FILE ONLY
+You must deliver the final resume as a downloadable .docx file. Do NOT output the resume as plain text or markdown. The .docx must be fully formatted and ready to send — the candidate should not need to reformat anything.
+
+To produce the .docx, write and execute Python code using the python-docx library. The code must implement every formatting rule below precisely.
+
+DOCX FORMATTING RULES:
+- Page size: A4. Margins: 0.5 inches on all sides.
+- Font: Times New Roman throughout.
+- Candidate name: 16pt, ALL CAPS, bold, centred, space-after 2pt.
+- Contact line: 10pt, centred, pipe-separated, space-after 6pt.
+- Section headers: 11pt, ALL CAPS, bold, white text on a dark grey shaded background (#404040), space-before 6pt, space-after 2pt.
+- Body text: 10pt, justified, line spacing exactly 1.0, space-after 4pt per bullet.
+- Bullets: round bullet (•), 10pt, justified, left-indent 0.2 inches, hanging indent 0.15 inches.
+- Bold: key numbers, ranks, outcomes, role titles, and company names only.
+- Italics: dates and institution names only.
+- No hyperlink formatting on LinkedIn URL — plain text.
+- No images, logos, text boxes, tables, headers, footers, or floating shapes.
+- HEADER (MANDATORY): Extract the candidate's full name, phone number, email, LinkedIn URL, and location EXACTLY as they appear in the resume provided. Copy them verbatim — do NOT invent, alter, or approximate any contact detail. If a field is absent, omit it entirely.
+
+After generating and providing the .docx file, show this summary as plain text:
 
   REQUIREMENT COVERAGE SUMMARY
   ✓ Met: [n] requirements
@@ -474,9 +491,7 @@ Format rules for your output:
 Begin now with Step 1, then Step 1B, then ask Question 1.`;
 }
 
-function buildScratchPrompt(s, answers) {
-  const qa = SCRATCH_QUESTIONS.map(q=>`Q: ${q.q}\nA: ${answers[q.id]||'(not answered)'}`).join('\n\n');
-
+function buildScratchPrompt(s) {
   const eduBlock = state.eduEntries.map((e, i) => {
     const lines = [
       e.degree       ? `Degree: ${e.degree}` : null,
@@ -501,6 +516,8 @@ function buildScratchPrompt(s, answers) {
   return `You are an expert resume writer working for kan.grow. Your job is to produce a world-class, ATS-optimised resume built entirely FROM SCRATCH using the candidate information below. The resume must fill exactly one complete A4 page — no overflow, no empty space — and directly satisfy every requirement in the job description.
 
 You will follow a strict 3-step process. Do NOT skip ahead or combine steps.
+
+CRITICAL RULE — NO MANUFACTURED INFORMATION: You must NEVER invent, assume, or fabricate any information about the candidate. Every bullet point, achievement, skill, date, number, company name, qualification, and responsibility must come directly from the candidate information provided below. If information is missing, omit that section or leave that gap honestly — do not fill it with invented or assumed content. A resume with an honest gap is always better than one with fabricated information.
 
 CRITICAL RULE — CONTACT DETAILS: Use ONLY the contact details provided below. Never invent, alter, or approximate any contact detail. If a detail is not provided, omit it entirely.
 
@@ -537,11 +554,6 @@ LEADERSHIP & ACTIVITIES
 ${s.leadership||'None provided'}
 
 ═══════════════════════════════════════
-ADDITIONAL CONTEXT FROM Q&A
-═══════════════════════════════════════
-${qa}
-
-═══════════════════════════════════════
 TARGET JOB DESCRIPTION
 ═══════════════════════════════════════
 ${s.scratchJd.trim()}
@@ -550,31 +562,79 @@ ${s.scratchJd.trim()}
 YOUR PROCESS — FOLLOW EXACTLY
 ═══════════════════════════════════════
 
-STEP 1 — KEYWORD & REQUIREMENT ANALYSIS
+STEP 1 — KEYWORD & ATS ANALYSIS
 - Extract the top 12 ATS keywords and skills from the JD
-- Map every stated JD requirement to the candidate's information above:
-  ✓ MET       — clearly evidenced in the information provided
-  ~ PARTIAL   — present but needs strengthening
-  ✗ MISSING   — not addressed in the information provided (do NOT fabricate)
+- Score the candidate's information's ATS match (0–100)
+- Note which keywords are present and which are missing
 
-Present as a clean table:
+STEP 1B — REQUIREMENT MAPPING (mandatory)
+Go through every stated requirement in the JD — must-haves and nice-to-haves — one by one.
+For each requirement, assign one of three statuses:
+
+  ✓ MET       — clearly evidenced in the information provided (cite the specific section)
+  ~ PARTIAL   — present but weak, vague, or unquantified
+  ✗ MISSING   — not addressed at all in the information provided
+
+Present this as a clean table:
   Requirement | Status | Evidence / Gap
 
-STEP 2 — PRE-WRITE PAGE FILL PLAN
-- Estimate how full the resume will be
-- If below 95%, identify exactly which Page Fill Strategies (1–5) you will apply
-- Plan all content before writing
+After the table, list the top 5 highest-priority gaps — the ones that, if addressed, would most improve the candidate's match. These become the basis for your questions in Step 2.
 
-STEP 3 — WRITE THE RESUME
+STEP 2 — QUESTION ROUND (5 rounds, one question at a time)
+Ask exactly ONE question per message. Wait for the candidate's answer before asking the next.
+Total of 5 questions maximum — no more.
+
+CRITICAL: If a candidate's answer is vague or lacks specifics (e.g. a number, date, or outcome), ask a targeted sub-question within the same round before moving on. Do NOT proceed until you have a concrete, usable answer. If the candidate genuinely does not have the information, accept it and move on — never invent a substitute.
+
+Base your questions on the gaps from Step 1B, prioritised by impact:
+1. MISSING requirements — can the candidate evidence these from experience not yet in the information provided?
+2. PARTIAL requirements — what numbers, outcomes, or context would strengthen them?
+3. Unquantified bullets — specific figures: team sizes, %, revenue, time saved, money involved
+4. Achievements missing fractions or prize amounts
+5. Any additional skills, projects, coursework, or activities that could fill remaining page space
+
+Frame every question specifically — reference the exact JD requirement and the gap.
+After each answer, briefly confirm what you'll use, then ask the next question.
+After question 5 is answered, say: "Thank you — I have everything I need. Generating your resume now."
+
+NEVER manufacture or assume any information the candidate has not explicitly provided. If a gap cannot be filled from the candidate's own answers, omit it honestly.
+
+STEP 3 — PRE-WRITE CHECKS (run both before writing a single line)
+
+Check A — Requirement coverage:
+- Every ✓ MET requirement must appear explicitly in the final resume
+- Every ~ PARTIAL must be strengthened using the candidate's answers
+- Every ✗ MISSING addressed in Q&A must now appear in the resume
+- Any ✗ MISSING the candidate could not address must NOT be fabricated — omit honestly
+
+Check B — Page fill plan:
+- Estimate how full the resume will be after writing the core sections
+- If estimated fill is below 95%, identify exactly which Page Fill Strategies (1–5) you will apply and to which sections
+- Plan the additional content before writing — do not discover the gap after the fact
+
+STEP 4 — WRITE THE RESUME
 Produce the final resume strictly following every guideline and page fill rule above.
 
-Format rules for your output:
-- Plain text only — no markdown bold (**), no asterisks, no headers with #
-- Use ALL CAPS for the candidate name
-- Use ALL CAPS for section headers
-- Use • for bullets
-- Write dates in plain text (the candidate will italicise in Word)
-- After the resume body, show this summary:
+OUTPUT FORMAT — MANDATORY: DOCX FILE ONLY
+You must deliver the final resume as a downloadable .docx file. Do NOT output the resume as plain text or markdown. The .docx must be fully formatted and ready to send — the candidate should not need to reformat anything.
+
+To produce the .docx, write and execute Python code using the python-docx library. The code must implement every formatting rule below precisely.
+
+DOCX FORMATTING RULES:
+- Page size: A4. Margins: 0.5 inches on all sides.
+- Font: Times New Roman throughout.
+- Candidate name: 16pt, ALL CAPS, bold, centred, space-after 2pt.
+- Contact line: 10pt, centred, pipe-separated, space-after 6pt.
+- Section headers: 11pt, ALL CAPS, bold, white text on a dark grey shaded background (#404040), space-before 6pt, space-after 2pt.
+- Body text: 10pt, justified, line spacing exactly 1.0, space-after 4pt per bullet.
+- Bullets: round bullet (•), 10pt, justified, left-indent 0.2 inches, hanging indent 0.15 inches.
+- Bold: key numbers, ranks, outcomes, role titles, and company names only.
+- Italics: dates and institution names only.
+- No hyperlink formatting on LinkedIn URL — plain text.
+- No images, logos, text boxes, tables, headers, footers, or floating shapes.
+- HEADER (MANDATORY): Use ONLY the contact details provided in the candidate information. Do NOT invent, alter, or approximate any contact detail. If a field is absent, omit it entirely.
+
+After generating and providing the .docx file, show this summary as plain text:
 
   REQUIREMENT COVERAGE SUMMARY
   ✓ Met: [n] requirements
@@ -583,7 +643,7 @@ Format rules for your output:
   ✓ ATS Score: [score]/100
   ✓ Estimated page fill: [%]
 
-Begin now with Step 1, then Step 2, then write the resume.`;
+Begin now with Step 1, then Step 1B, then ask Question 1.`;
 }
 
 // ── HELPERS ─────────────────────────────────────────────────────────
@@ -635,7 +695,17 @@ function decideNewPoints(choice) {
 }
 function submitNewPoints() { saveInputs(); setState({ screen: 'input', activeTab: 'jd' }); }
 
-function scratchNext() { saveEntries(); saveScratchStep(); setState({ scratchStep: state.scratchStep + 1 }); }
+function scratchNext() {
+  saveEntries();
+  saveScratchStep();
+  const nextStep = state.scratchStep + 1;
+  // Step 7 is JD — after that, generate the prompt directly (no static Q&A)
+  if (state.scratchStep === 7) {
+    setState({ scratchStep: nextStep, screen: 'prompt', generatedPrompt: buildScratchPrompt(state.scratch) });
+  } else {
+    setState({ scratchStep: nextStep });
+  }
+}
 function scratchBack() { saveEntries(); saveScratchStep(); setState({ scratchStep: state.scratchStep - 1 }); }
 
 // Save structured entry fields from DOM into state arrays
@@ -985,7 +1055,7 @@ function screens() {
       const step = state.scratchStep;
       const FLOW = ['personal','education','experience','skills','achievements','certifications','leadership','jd','questions','prompt'];
       const pct = Math.round((step / (FLOW.length - 1)) * 100);
-      const stepLabel = ['Personal details','Education','Work experience','Skills','Achievements','Certifications','Leadership & Activities','Job description','Questions','Done'][step] || '';
+      const stepLabel = ['Personal details','Education','Work experience','Skills','Achievements','Certifications','Leadership & Activities','Job description'][step] || '';
 
       const scratchFields = {
         personal: {
@@ -1175,55 +1245,18 @@ function screens() {
             <div class="btn-row">
               ${step > 0 ? `<button class="btn btn-outline" onclick="scratchBack()">← Back</button>` : `<button class="btn btn-outline" onclick="setState({screen:'home'})">← Home</button>`}
               <button id="scratchNextBtn" class="btn btn-primary" onclick="scratchNext()" ${canNext?'':'disabled'}>
-                ${step === 7 ? 'Continue to questions →' : 'Next →'}
+                ${step === 7 ? 'Generate my prompt →' : 'Next →'}
               </button>
             </div>
             ${step === 7 ? `
               <div class="tip-notice" style="margin-top:1rem">
-                <span>💬</span>
-                <div>After this, we'll ask you <strong>5 quick questions</strong> to gather detail Claude needs for stronger bullet points. Takes about 2 minutes.</div>
+                <span>🎉</span>
+                <div>After this, your prompt will be ready to copy into Claude. Claude will then analyse your information against the JD and ask you targeted questions before writing your resume.</div>
               </div>
             ` : ''}
           </div>`;
       }
 
-      // Step 8: questions
-      if (step === 8) {
-        const q = SCRATCH_QUESTIONS[state.scratchCurrentQ];
-        const answered = state.scratchAnswers[q.id] || '';
-        const isLast = state.scratchCurrentQ === SCRATCH_QUESTIONS.length - 1;
-        return `
-          <div class="screen">
-            ${progressWrap(pct, `Question ${state.scratchCurrentQ+1} of ${SCRATCH_QUESTIONS.length}`)}
-            <h2>A few quick questions</h2>
-            <p class="subtitle">These help Claude write stronger, more specific bullets. Answer as honestly and specifically as you can.</p>
-            <div class="info-notice" style="margin-bottom:1.25rem">
-              <span>💬</span>
-              <div>
-                <strong>Question ${state.scratchCurrentQ+1} of ${SCRATCH_QUESTIONS.length}</strong>
-                ${isLast ? ' — last one!' : ''}
-              </div>
-            </div>
-            <div class="card" style="margin-bottom:1rem">
-              <div class="card-label" style="margin-bottom:0.5rem">${q.label}</div>
-              <p style="font-size:14px;color:var(--ink);line-height:1.7;margin-bottom:1rem">${q.q}</p>
-              <textarea id="scratchAnswer" rows="4" placeholder="Type your answer here — be as specific as possible..." style="font-size:14px">${answered}</textarea>
-              <p class="field-hint" style="margin-top:6px">No need to be formal. Just write what comes to mind — Claude will shape it.</p>
-            </div>
-            <div class="btn-row">
-              <button class="btn btn-outline" onclick="${state.scratchCurrentQ===0 ? 'setState({scratchStep:7})' : 'setState({scratchCurrentQ:state.scratchCurrentQ-1})'}">← Back</button>
-              <button class="btn btn-primary" onclick="saveScratchAnswer()">
-                ${isLast ? 'Generate my prompt →' : 'Next question →'}
-              </button>
-            </div>
-            ${isLast ? `
-              <div class="tip-notice" style="margin-top:1rem">
-                <span>🎉</span>
-                <div>After this, your prompt will be ready to copy into Claude AI. Claude will then write your resume — no further input needed on your end until Claude starts asking its own questions.</div>
-              </div>
-            ` : ''}
-          </div>`;
-      }
       return '';
     }
 
